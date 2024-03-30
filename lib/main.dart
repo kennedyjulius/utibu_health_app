@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:utibu_health_app/firebase_options.dart';
 import 'package:utibu_health_app/screens/other_screens/homescreen.dart';
+import 'package:utibu_health_app/screens/other_screens/product_detail_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
