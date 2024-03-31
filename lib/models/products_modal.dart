@@ -5,7 +5,7 @@ String productModelToJson(ProductModel data)=>json.encode(data.toJson());
 class ProductModel {
   ProductModel({
     required this.image,
-    required this.pageId,
+    required this.productId,
     //required this.isFavourite,
     required this.name,
     required this.price,
@@ -16,7 +16,7 @@ class ProductModel {
   });
 
   String image;
-  String pageId;
+  String productId;
   //bool isFavourite;
   String name;
 
@@ -28,7 +28,7 @@ class ProductModel {
 
   factory ProductModel.fromJson(Map<String, dynamic> json) => ProductModel(
     image: json["image"],
-    pageId: json["id"],
+    productId: json["productId"],
     //isFavourite: false,
     quantity: json["quantity"],
     name: json["name"],
@@ -41,7 +41,7 @@ class ProductModel {
 
   Map<String, dynamic> toJson() => {
     "image": image,
-    "id": pageId,
+    "productid": productId,
     //"isFavourite":isFavourite,
     "quantity": quantity,
     "name": name,
@@ -50,17 +50,17 @@ class ProductModel {
   };
   ProductModel copyWith({
     String? image,
-    String? id,
+    String? productId,
     //bool? isFavourite,
     String? name,
     String? price,
     String? description,
     //String? status,
-    int ? qty,
+    int ? quantity,
   }) {
     return ProductModel(
       image: image ?? this.image,
-      pageId: pageId,
+      productId: productId ?? this.productId,
       //isFavourite: isFavourite ?? this.isFavourite,
       name: name ?? this.name,
       price: price ?? this.price,

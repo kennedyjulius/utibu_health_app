@@ -20,36 +20,37 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<List<ProductModel>> fetchProducts() async {
-  try {
-    QuerySnapshot snapshot = await FirebaseFirestore.instance.collection('Products').get();
-    return snapshot.docs.map((doc) {
-      final data = (doc.data() as Map<String, dynamic>);
-      final image = data?['image'] ?? ''; // Provide default value if image is null
-      final pageId = data?['id'] ?? ''; // Provide default value if id is null
-      final name = data?['name'] ?? ''; // Provide default value if name is null
-      final price = data?['price'] ?? ''; // Provide default value if price is null
-      final description = data?['description'] ?? ''; // Provide default value if description is null
-      final quantity = data?['quantity'] ?? 0; // Provide default value if quantity is null
-      
-      // Validate required fields
-      if (image.isEmpty || pageId.isEmpty || name.isEmpty || price.isEmpty || description.isEmpty) {
-        throw Exception('Invalid product data: $data');
-      }
-      
-      return ProductModel(
-        image: image,
-        pageId: pageId,
-        name: name,
-        price: price,
-        description: description,
-        quantity: quantity,
-      );
-    }).toList();
-  } catch (e) {
-    print('Error fetching products: $e');
-    return [];
+    try {
+      QuerySnapshot snapshot = await FirebaseFirestore.instance.collection('Products').get();
+      return snapshot.docs.map((doc) {
+        final data = (doc.data() as Map<String, dynamic>);
+        final image = data?['image'] ?? ''; // Provide default value if image is null
+        final productId = data?['productId'] ?? ''; // Provide default value if id is null
+        final name = data?['name'] ?? ''; // Provide default value if name is null
+        final price = data?['price'] ?? ''; // Provide default value if price is null
+        final description = data?['description'] ?? ''; // Provide default value if description is null
+        final quantity = data?['quantity'] ?? 0; // Provide default value if quantity is null
+        
+        // Validate required fields
+        if (image.isEmpty || productId.isEmpty || name.isEmpty || price.isEmpty || description.isEmpty) {
+          throw Exception('Invalid product data: $data');
+        }
+        
+        return ProductModel(
+          image: image,
+          productId: productId,
+          name: name,
+          price: price,
+          description: description,
+          quantity: quantity,
+        );
+      }).toList();
+    } catch (e) {
+      print('Error fetching products: $e');
+      return [];
+    }
   }
-}
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -130,8 +131,8 @@ class _HomeScreenState extends State<HomeScreen> {
                               context,
                               MaterialPageRoute(
                                 builder: (context) => ProductsDetails(
-                                  productId: int.parse(product.pageId),
-                                ),
+                                  productId: product.productId,
+                                )
                               ),
                             );
                           },
@@ -148,6 +149,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 children: [
                                   Expanded(
                                     child: ClipRRect(
+                                      clipBehavior: Clip.hardEdge,
                                       borderRadius: BorderRadius.circular(8),
                                       child: Image.network(
                                         product.image,
