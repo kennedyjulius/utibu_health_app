@@ -1,5 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:get/get.dart';
+import 'package:utibu_health_app/commons/widgets/Colors.dart';
+import 'package:utibu_health_app/commons/widgets/app_icon.dart';
+import 'package:utibu_health_app/commons/widgets/big_text.dart';
+import 'package:utibu_health_app/commons/widgets/expandable_text_widget.dart';
 import 'package:utibu_health_app/models/products_modal.dart';
+import 'package:utibu_health_app/screens/cart/cart_page.dart';
 
 class ProductsDetails extends StatefulWidget {
   final int productId;
@@ -16,77 +23,281 @@ class ProductsDetails extends StatefulWidget {
 }
 
 class _ProductsDetailsState extends State<ProductsDetails> {
+  late DocumentReference _quantityRef;
+  late int _quantity;
+  late double _totalPrice;
+
+  @override
+  void initState() {
+    super.initState();
+    _quantity = widget.productModel.quantity ?? 0;
+    _quantityRef = FirebaseFirestore.instance
+        .collection('products')
+        .doc(widget.productId.toString())
+        .collection('quantity')
+        .doc('quantity');
+
+    _totalPrice = widget.productModel.price * _quantity;
+  }
+
   @override
   Widget build(BuildContext context) {
-    String name = widget.productModel.name;
-    String description = widget.productModel.description;
-    String image = widget.productModel.image;
-    double price = widget.productModel.price;
-    int quantity = widget.productModel.quantity ?? 0;
-
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Product Details'),
-      ),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Image.network(
-              image,
-              width: double.infinity,
-              height: 300,
-              fit: BoxFit.cover,
+      body: CustomScrollView(
+        slivers: [
+          SliverAppBar(
+            automaticallyImplyLeading: false,
+            toolbarHeight: 70,
+            title: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                GestureDetector(
+                  onTap: () {
+                    Get.back();
+                  },
+                  child: AppIcon(
+                    icon: Icons.clear,
+                    iconsize: 24,
+                  ),
+                ),
+                Stack(
+                  children: [
+                    GestureDetector(
+                      onTap: () {
+                        // Handle cart tap
+                      },
+                      child: AppIcon(
+                        icon: Icons.shopping_cart_outlined,
+                        iconsize: 24,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
-            Padding(
-              padding: const EdgeInsets.all(16.0),
+            bottom: PreferredSize(
+              preferredSize: Size.fromHeight(20),
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(30),
+                    topRight: Radius.circular(30),
+                  ),
+                  color: Colors.white,
+                ),
+                alignment: Alignment.center,
+                padding: EdgeInsets.symmetric(vertical: 5),
+                child: BigText(
+                  size: 26,
+                  text: widget.productModel.name,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            pinned: true,
+            backgroundColor: Colors.purple,
+            expandedHeight: 300,
+            flexibleSpace: FlexibleSpaceBar(
+              background: Image.network(
+                widget.productModel.image,
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: EdgeInsets.all(20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    name,
-                    style: TextStyle(
-                      fontSize: 24,
+                  Center(
+                    child: BigText(
+                      text: 'Description',
+                      size: 20,
+                      color: Colors.pink.shade100,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   SizedBox(height: 10),
-                  Text(
-                    'Description:',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  SizedBox(height: 10),
-                  Text(
-                    description,
-                    style: TextStyle(
-                      fontSize: 16,
-                    ),
-                  ),
+                  ExpandableTextWidget(text: widget.productModel.description),
                   SizedBox(height: 20),
-                  Text(
-                    'Price: Kshs $price',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
+                  BigText(
+                    text: 'Each Item Price: Ksh ${widget.productModel.price}',
+                    size: 18,
+                    fontWeight: FontWeight.bold,
                   ),
                   SizedBox(height: 10),
-                  Text(
-                    'Quantity: $quantity',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
+                  _buildQuantityWidget(),
+                  SizedBox(
+                    height: 30,
+                  ),
+                  BigText(
+                    text: 'Total Price to Pay : Ksh $_totalPrice',
+                    size: 18,
+                    fontWeight: FontWeight.bold,
                   ),
                 ],
               ),
             ),
-          ],
-        ),
+          ),
+        ],
+      ),
+      bottomNavigationBar: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 45, vertical: 10),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                GestureDetector(
+                  onTap: () {
+                    _removeQuantity();
+                  },
+                  child: AppIcon(
+                    iconsize: 24,
+                    iconColor: Colors.white,
+                    backgroundColor: AppColors.mainColor,
+                    icon: Icons.remove,
+                  ),
+                ),
+                BigText(
+                  text: 'Ksh $_totalPrice',
+                  color: AppColors.mainBlackColor,
+                  size: 26,
+                  fontWeight: FontWeight.bold,
+                ),
+                GestureDetector(
+                  onTap: () {
+                    _addQuantity();
+                  },
+                  child: AppIcon(
+                    iconsize: 24,
+                    iconColor: Colors.white,
+                    backgroundColor: AppColors.mainColor,
+                    icon: Icons.add,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Container(
+            height: 120,
+            padding: EdgeInsets.symmetric(vertical: 30, horizontal: 20),
+            decoration: BoxDecoration(
+              color: AppColors.buttonBackgroundColor,
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(24),
+                topRight: Radius.circular(24),
+              ),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Container(
+                  padding: EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(20),
+                    color: Colors.white,
+                  ),
+                  child: Icon(
+                    Icons.favorite,
+                    color: AppColors.mainColor,
+                  ),
+                ),
+                GestureDetector(
+                  onTap: () {
+                    // Handle adding to cart
+                    Navigator.of(context).push(MaterialPageRoute(
+                      builder: (context) => CartPage(
+                        productId: widget.productId,
+                        productName: widget.productModel.name,
+                        productPrice: widget.productModel.price,
+                        productQuantity: _quantity,
+                      ),
+                    ));
+                  },
+                  child: Container(
+                    height: 60,
+                    padding: EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(20),
+                      color: AppColors.mainColor,
+                    ),
+                    child: BigText(
+                      text: 'Ksh $_totalPrice',
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
+  }
+
+  Widget _buildQuantityWidget() {
+    return Row(
+      children: [
+        GestureDetector(
+          onTap: () {
+            _removeQuantity();
+          },
+          child: AppIcon(
+            iconsize: 24,
+            iconColor: Colors.black,
+            icon: Icons.remove,
+          ),
+        ),
+        SizedBox(width: 10),
+        BigText(
+          text: '$_quantity',
+          size: 18,
+          fontWeight: FontWeight.bold,
+        ),
+        SizedBox(width: 10),
+        GestureDetector(
+          onTap: () {
+            _addQuantity();
+          },
+          child: AppIcon(
+            iconsize: 24,
+            iconColor: Colors.black,
+            icon: Icons.add,
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _removeQuantity() {
+    if (_quantity > 0) {
+      setState(() {
+        _quantity--;
+        _totalPrice = widget.productModel.price * _quantity;
+      });
+      _updateQuantityInFirebase();
+    } else {
+      if (_quantity < 0) {
+        Get.snackbar("Alert Message",
+            "The item Quantity cannot be less than 0 , kindly contact the admin for further support");
+      }
+      return;
+    }
+  }
+
+  void _addQuantity() {
+    setState(() {
+      _quantity++;
+      _totalPrice = widget.productModel.price * _quantity;
+    });
+    _updateQuantityInFirebase();
+  }
+
+  void _updateQuantityInFirebase() {
+    _quantityRef.update({'quantity': _quantity});
   }
 }

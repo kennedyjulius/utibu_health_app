@@ -17,10 +17,15 @@ class IconAndTextWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      //mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Icon(icon, color: iconColor,), 
-        SizedBox(width: 5,),
-        SmallText(text: text,)
+        SizedBox(width: 15,),
+        Text(text, style: TextStyle(
+          fontWeight: FontWeight.bold, 
+          color: Color(0xFF89dad0), fontSize: 18
+          ),)
       ],
     );
   }

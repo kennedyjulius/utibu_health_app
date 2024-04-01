@@ -9,6 +9,7 @@ import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:utibu_health_app/commons/widgets/custom_downward_arrow.dart';
 import 'package:utibu_health_app/commons/widgets/custom_formfield2.dart';
 import 'package:utibu_health_app/commons/widgets/custom_textwidget.dart';
+import 'package:utibu_health_app/commons/widgets/icon_and_text_widget.dart';
 import 'package:utibu_health_app/models/products_modal.dart';
 import 'package:utibu_health_app/screens/other_screens/product_detail_screen.dart';
 
@@ -186,55 +187,56 @@ class _HomeScreenState extends State<HomeScreen> {
                 height: 10,
               ),
               CustomTextWidget(
-                  text: "Top Rated Medication ?.",
+                  text: "New Arrivals.",
                   size: 18,
                   color: Colors.amber.shade200,
                   fontWeight: FontWeight.bold),
               SizedBox(
                 height: 10,
               ),
-              Container(
-                child: Column(
-                  children: [
-                    Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: Colors.blue),
-                      ),
-                      child: CarouselSlider(
-                          items: myItems,
-                          options: CarouselOptions(
-                            autoPlay: true,
-                            height: 200,
-                            autoPlayCurve: Curves.fastOutSlowIn,
-                            autoPlayAnimationDuration:
-                                Duration(milliseconds: 800),
-                            autoPlayInterval: Duration(seconds: 4),
-                            enlargeCenterPage: true,
-                            aspectRatio: 2.0,
-                            onPageChanged: (index, reason) {
-                              setState(() {
-                                myCurrentIndex = index;
-                              });
-                            },
-                          )),
+              Column(
+                children: [
+                  Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: Colors.blue),
                     ),
-                    SizedBox(
-                      height: 8,
-                    ),
-                    AnimatedSmoothIndicator(
-                      activeIndex: myCurrentIndex,
-                      count: myItems.length,
-                      effect: WormEffect(
-                          dotHeight: 8,
-                          dotWidth: 10,
-                          spacing: 5,
-                          dotColor: Colors.grey.shade200,
-                          activeDotColor: Colors.blue.shade300,
-                          paintStyle: PaintingStyle.fill),
-                    ),
-                  ],
-                ),
+                    child: CarouselSlider(
+                        items: myItems,
+                        options: CarouselOptions(
+                          autoPlay: true,
+                          height: 150,
+                          viewportFraction: 0.8,
+                          animateToClosest: true,
+                          pageSnapping: true,
+                          autoPlayCurve: Curves.fastOutSlowIn,
+                          autoPlayAnimationDuration:
+                              Duration(milliseconds: 800),
+                          autoPlayInterval: Duration(seconds: 4),
+                          enlargeCenterPage: true,
+                          //aspectRatio: 2.0,
+                          onPageChanged: (index, reason) {
+                            setState(() {
+                              myCurrentIndex = index;
+                            });
+                          },
+                        )),
+                  ),
+                  SizedBox(
+                    height: 8,
+                  ),
+                  AnimatedSmoothIndicator(
+                    activeIndex: myCurrentIndex,
+                    count: myItems.length,
+                    effect: WormEffect(
+                        dotHeight: 8,
+                        dotWidth: 10,
+                        spacing: 5,
+                        dotColor: Colors.grey.shade200,
+                        activeDotColor: Colors.blue.shade300,
+                        paintStyle: PaintingStyle.fill),
+                  ),
+                ],
               ),
               SizedBox(
                 height: 10,
@@ -244,7 +246,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   CustomTextWidget(
-                      text: "Offers",
+                      text: "New Offers",
                       size: 14,
                       color: Colors.black38,
                       fontWeight: FontWeight.bold),
@@ -277,114 +279,136 @@ class _HomeScreenState extends State<HomeScreen> {
                         );
                       } else {
                         List<ProductModel>? products = snapshot.data;
-                        return GridView.builder(
-                          gridDelegate:
-                              SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 2,
-                            crossAxisSpacing: 5,
-                            mainAxisSpacing: 4,
-                          ),
-                          itemCount: products!.length,
-                          shrinkWrap: true,
-                          physics: NeverScrollableScrollPhysics(),
-                          itemBuilder: (BuildContext context, int index) {
-                            ProductModel product = products[index];
-                            return GestureDetector(
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => ProductsDetails(
-                                      productId: int.parse(product.id),
-                                      productModel: product,
-                                    ),
-                                  ),
-                                );
-                              },
-                              child: Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 4),
-                                child: Container(
-                                  margin: EdgeInsets.symmetric(
-                                    horizontal: 5,
-                                    vertical: 4,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    border: Border.all(color: Colors.green),
-                                    borderRadius: BorderRadius.circular(20),
-                                  ),
-                                  child: Stack(
-                                    children: [
-                                      // Image container
-                                      Container(
-                                        width: double.infinity,
-                                        height: double.infinity,
-                                        child: ClipRRect(
-                                          borderRadius:
-                                              BorderRadius.circular(20),
-                                          child: Image.network(
-                                            product.image,
-                                            fit: BoxFit.cover,
-                                          ),
-                                        ),
+                        return SingleChildScrollView(
+                          child: GridView.builder(
+                            gridDelegate:
+                                SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 2,
+                              crossAxisSpacing: 5,
+                              mainAxisSpacing: 4,
+                            ),
+                            itemCount: products!.length,
+                            shrinkWrap: true,
+                            physics: NeverScrollableScrollPhysics(),
+                            itemBuilder: (BuildContext context, int index) {
+                              ProductModel product = products[index];
+                              return GestureDetector(
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => ProductsDetails(
+                                        productId: int.parse(product.id),
+                                        productModel: product,
                                       ),
-                                      // Information container
-                                      Positioned(
-                                        bottom: 0,
-                                        left: 0,
-                                        right: 0,
-                                        child: Container(
-                                          padding: EdgeInsets.all(8),
-                                          decoration: BoxDecoration(
-                                            color:
-                                                Colors.black.withOpacity(0.7),
-                                            borderRadius: BorderRadius.only(
-                                              bottomLeft: Radius.circular(20),
-                                              bottomRight: Radius.circular(20),
+                                    ),
+                                  );
+                                },
+                                child: Padding(
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 4),
+                                  child: Container(
+                                    margin: EdgeInsets.symmetric(
+                                      horizontal: 5,
+                                      vertical: 4,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      border: Border.all(color: Colors.green),
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    child: Stack(
+                                      children: [
+                                        // Image container
+                                        SizedBox(
+                                          width: double.infinity,
+                                          height: double.infinity,
+                                          child: ClipRRect(
+                                            borderRadius:
+                                                BorderRadius.circular(20),
+                                            child: Image.network(
+                                              product.image,
+                                              fit: BoxFit.cover,
                                             ),
                                           ),
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                product.name,
-                                                style: TextStyle(
-                                                  fontSize: 16,
-                                                  fontWeight: FontWeight.bold,
-                                                  color: Colors.white,
-                                                ),
+                                        ),
+                                        // Information container
+                                        Positioned(
+                                          bottom: 0,
+                                          left: 0,
+                                          right: 0,
+                                          child: Container(
+                                            padding: EdgeInsets.all(8),
+                                            decoration: BoxDecoration(
+                                              color:
+                                                  Colors.black.withOpacity(0.7),
+                                              borderRadius: BorderRadius.only(
+                                                bottomLeft: Radius.circular(20),
+                                                bottomRight: Radius.circular(20),
                                               ),
-                                              SizedBox(height: 4),
-                                              Text(
-                                                'Price: Kshs ${product.price}',
-                                                style: TextStyle(
-                                                  fontSize: 12,
-                                                  fontWeight: FontWeight.bold,
-                                                  color: Colors.white,
+                                            ),
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  product.name,
+                                                  style: TextStyle(
+                                                    fontSize: 16,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.white,
+                                                  ),
                                                 ),
-                                              ),
-                                              SizedBox(height: 1),
-                                            ],
+                                                SizedBox(height: 2),
+                                                Text(
+                                                  'Price: Kshs ${product.price}',
+                                                  style: TextStyle(
+                                                    fontSize: 12,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.white,
+                                                  ),
+                                                ),
+                                                SizedBox(height: 5),
+                                                Align(
+                                                  alignment: Alignment.bottomCenter,
+                                                  child: Container(
+                                                    margin: EdgeInsets.symmetric(
+                                                      horizontal: 10
+                                                    ),
+                                                    width: 100,
+                                                    decoration: BoxDecoration(
+                                                      borderRadius: BorderRadius.circular(5),
+                                                      color: Colors.greenAccent.shade700
+                                                    ),
+                                                    child: IconAndTextWidget(
+                                                      icon: Icons.shopping_cart, 
+                                                      text: 'Buy', 
+                                                      iconColor: Colors.redAccent.shade400,
+                                                      ),
+                                                  ),
+                                                )
+                          
+                                              
+                                              ],
+                                            ),
                                           ),
                                         ),
-                                      ),
-                                      // Floating discount banner
-                                      Align(
-                                        alignment: Alignment.topCenter,
-                                        child: DownwardArrowContainer(
-                                          width: 100,
-                                          height: 50,
-                                          color: Colors.red,
-                                          text: '20% OFF',
+                                        // Floating discount banner
+                                        Align(
+                                          alignment: Alignment.topCenter,
+                                          child: DownwardArrowContainer(
+                                            width: 40,
+                                            height: 60,
+                                            color: Colors.red,
+                                            text: '20% OFF',
+                                          ),
                                         ),
-                                      ),
-                                    ],
+                                      ],
+                                    ),
                                   ),
                                 ),
-                              ),
-                            );
-                          },
+                              );
+                            },
+                          ),
                         );
                       }
                     },
