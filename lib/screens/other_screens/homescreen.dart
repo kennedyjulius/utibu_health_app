@@ -1,5 +1,14 @@
+// ignore_for_file: prefer_const_constructors
+
+import 'package:carousel_slider/carousel_slider.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/widgets.dart';
+import 'package:smooth_page_indicator/smooth_page_indicator.dart';
+import 'package:utibu_health_app/commons/widgets/custom_downward_arrow.dart';
+import 'package:utibu_health_app/commons/widgets/custom_formfield2.dart';
+import 'package:utibu_health_app/commons/widgets/custom_textwidget.dart';
 import 'package:utibu_health_app/models/products_modal.dart';
 import 'package:utibu_health_app/screens/other_screens/product_detail_screen.dart';
 
@@ -19,30 +28,53 @@ class _HomeScreenState extends State<HomeScreen> {
     productsFuture = fetchProducts();
   }
 
+  void _handleBuyButtonClick(ProductModel product) {
+    // Navigate to the ProductsDetails screen with the selected product
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ProductsDetails(
+          productId: int.parse(product.id), // Assuming product.id is a String
+          productModel: product, // Pass the selected product
+        ),
+      ),
+    );
+  }
+
   Future<List<ProductModel>> fetchProducts() async {
     try {
-      QuerySnapshot snapshot = await FirebaseFirestore.instance.collection('Products').get();
+      QuerySnapshot snapshot =
+          await FirebaseFirestore.instance.collection('Products').get();
       return snapshot.docs.map((doc) {
         final data = (doc.data() as Map<String, dynamic>);
-        final image = data?['image'] ?? ''; // Provide default value if image is null
-        final productId = data?['productId'] ?? ''; // Provide default value if id is null
-        final name = data?['name'] ?? ''; // Provide default value if name is null
-        final price = data?['price'] ?? ''; // Provide default value if price is null
-        final description = data?['description'] ?? ''; // Provide default value if description is null
-        final quantity = data?['quantity'] ?? 0; // Provide default value if quantity is null
-        
+        final image = data['image'] ?? '';
+        final id = data['productId']?.toString() ?? '';
+        final name = data['name'] ?? '';
+        final priceString = data['price']?.toString() ?? '';
+        final description = data['description'] ?? '';
+        final quantity = data['quantity']
+            ?.toInt(); // Convert to int if present, otherwise null
+        final location = data['location'];
+
         // Validate required fields
-        if (image.isEmpty || productId.isEmpty || name.isEmpty || price.isEmpty || description.isEmpty) {
+        if (image.isEmpty ||
+            id.isEmpty ||
+            name.isEmpty ||
+            priceString.isEmpty ||
+            description.isEmpty) {
           throw Exception('Invalid product data: $data');
         }
-        
+
+        final price = double.parse(priceString);
+
         return ProductModel(
           image: image,
-          productId: productId,
+          id: id,
           name: name,
           price: price,
           description: description,
           quantity: quantity,
+          location: location,
         );
       }).toList();
     } catch (e) {
@@ -50,6 +82,35 @@ class _HomeScreenState extends State<HomeScreen> {
       return [];
     }
   }
+
+  final TextEditingController _searchController = TextEditingController();
+
+  final PageController _pageController = PageController();
+
+  // final List<String> images = [
+  //   "assets/profile.jpg",
+  //   "assets/profile.jpg",
+  //   "assets/profile.jpg",
+  //   "assets/profile.jpg",
+  //   "assets/profile.jpg",
+  //   "assets/profile.jpg",
+  //   "assets/profile.jpg",
+  //   "assets/profile.jpg"
+  // ];
+
+  final myItems = [
+    Image.asset(
+      "assets/profile.jpg",
+      fit: BoxFit.cover,
+    ),
+    Image.asset("assets/profile.jpg", fit: BoxFit.cover),
+    Image.asset("assets/profile.jpg", fit: BoxFit.cover),
+    Image.asset("assets/profile.jpg", fit: BoxFit.cover),
+    Image.asset("assets/profile.jpg", fit: BoxFit.cover),
+    Image.asset("assets/profile.jpg", fit: BoxFit.cover),
+  ];
+
+  int myCurrentIndex = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -96,124 +157,243 @@ class _HomeScreenState extends State<HomeScreen> {
           SizedBox(width: 10),
         ],
       ),
-      body: Column(
-        children: [
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 10),
-              child: FutureBuilder<List<ProductModel>>(
-                future: productsFuture,
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return Center(
-                      child: CircularProgressIndicator(),
-                    );
-                  } else if (snapshot.hasError) {
-                    return Center(
-                      child: Text('Error: ${snapshot.error}'),
-                    );
-                  } else {
-                    List<ProductModel>? products = snapshot.data;
-                    return GridView.builder(
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        crossAxisSpacing: 5,
-                        mainAxisSpacing: 4,
+      body: Expanded(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+          child: Column(
+            children: [
+              Container(
+                height: 60,
+                width: double.maxFinite,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(5),
+                  color: Colors.pinkAccent,
+                ),
+                child: Center(
+                    child: Text(
+                  "Add Delivery Location",
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                )),
+              ),
+              SizedBox(
+                height: 10,
+              ),
+              CustomFormField2(text1: "Search here", labelText: "search"),
+              SizedBox(
+                height: 10,
+              ),
+              SizedBox(
+                height: 10,
+              ),
+              CustomTextWidget(
+                  text: "Top Rated Medication ?.",
+                  size: 18,
+                  color: Colors.amber.shade200,
+                  fontWeight: FontWeight.bold),
+              SizedBox(
+                height: 10,
+              ),
+              Container(
+                child: Column(
+                  children: [
+                    Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: Colors.blue),
                       ),
-                      itemCount: products!.length,
-                      shrinkWrap: true,
-                      physics: NeverScrollableScrollPhysics(),
-                      itemBuilder: (BuildContext context, int index) {
-                        ProductModel product = products[index];
-                        return GestureDetector(
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => ProductsDetails(
-                                  productId: product.productId,
-                                )
+                      child: CarouselSlider(
+                          items: myItems,
+                          options: CarouselOptions(
+                            autoPlay: true,
+                            height: 200,
+                            autoPlayCurve: Curves.fastOutSlowIn,
+                            autoPlayAnimationDuration:
+                                Duration(milliseconds: 800),
+                            autoPlayInterval: Duration(seconds: 4),
+                            enlargeCenterPage: true,
+                            aspectRatio: 2.0,
+                            onPageChanged: (index, reason) {
+                              setState(() {
+                                myCurrentIndex = index;
+                              });
+                            },
+                          )),
+                    ),
+                    SizedBox(
+                      height: 8,
+                    ),
+                    AnimatedSmoothIndicator(
+                      activeIndex: myCurrentIndex,
+                      count: myItems.length,
+                      effect: WormEffect(
+                          dotHeight: 8,
+                          dotWidth: 10,
+                          spacing: 5,
+                          dotColor: Colors.grey.shade200,
+                          activeDotColor: Colors.blue.shade300,
+                          paintStyle: PaintingStyle.fill),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(
+                height: 10,
+              ),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  CustomTextWidget(
+                      text: "Offers",
+                      size: 14,
+                      color: Colors.black38,
+                      fontWeight: FontWeight.bold),
+                  TextButton(
+                      onPressed: () {},
+                      child: Text(
+                        "view all",
+                        style: TextStyle(
+                            fontWeight: FontWeight.w300,
+                            color: Colors.pink.shade100),
+                      )),
+                ],
+              ),
+              SizedBox(
+                height: 10,
+              ),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 0),
+                  child: FutureBuilder<List<ProductModel>>(
+                    future: productsFuture,
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return Center(
+                          child: CircularProgressIndicator(),
+                        );
+                      } else if (snapshot.hasError) {
+                        return Center(
+                          child: Text('Error: ${snapshot.error}'),
+                        );
+                      } else {
+                        List<ProductModel>? products = snapshot.data;
+                        return GridView.builder(
+                          gridDelegate:
+                              SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2,
+                            crossAxisSpacing: 5,
+                            mainAxisSpacing: 4,
+                          ),
+                          itemCount: products!.length,
+                          shrinkWrap: true,
+                          physics: NeverScrollableScrollPhysics(),
+                          itemBuilder: (BuildContext context, int index) {
+                            ProductModel product = products[index];
+                            return GestureDetector(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => ProductsDetails(
+                                      productId: int.parse(product.id),
+                                      productModel: product,
+                                    ),
+                                  ),
+                                );
+                              },
+                              child: Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 4),
+                                child: Container(
+                                  margin: EdgeInsets.symmetric(
+                                    horizontal: 5,
+                                    vertical: 4,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    border: Border.all(color: Colors.green),
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  child: Stack(
+                                    children: [
+                                      // Image container
+                                      Container(
+                                        width: double.infinity,
+                                        height: double.infinity,
+                                        child: ClipRRect(
+                                          borderRadius:
+                                              BorderRadius.circular(20),
+                                          child: Image.network(
+                                            product.image,
+                                            fit: BoxFit.cover,
+                                          ),
+                                        ),
+                                      ),
+                                      // Information container
+                                      Positioned(
+                                        bottom: 0,
+                                        left: 0,
+                                        right: 0,
+                                        child: Container(
+                                          padding: EdgeInsets.all(8),
+                                          decoration: BoxDecoration(
+                                            color:
+                                                Colors.black.withOpacity(0.7),
+                                            borderRadius: BorderRadius.only(
+                                              bottomLeft: Radius.circular(20),
+                                              bottomRight: Radius.circular(20),
+                                            ),
+                                          ),
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                product.name,
+                                                style: TextStyle(
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.white,
+                                                ),
+                                              ),
+                                              SizedBox(height: 4),
+                                              Text(
+                                                'Price: Kshs ${product.price}',
+                                                style: TextStyle(
+                                                  fontSize: 12,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.white,
+                                                ),
+                                              ),
+                                              SizedBox(height: 1),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                      // Floating discount banner
+                                      Align(
+                                        alignment: Alignment.topCenter,
+                                        child: DownwardArrowContainer(
+                                          width: 100,
+                                          height: 50,
+                                          color: Colors.red,
+                                          text: '20% OFF',
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
                               ),
                             );
                           },
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 20),
-                            child: Container(
-                              decoration: BoxDecoration(
-                                border: Border.all(color: Colors.green),
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Expanded(
-                                    child: ClipRRect(
-                                      clipBehavior: Clip.hardEdge,
-                                      borderRadius: BorderRadius.circular(8),
-                                      child: Image.network(
-                                        product.image,
-                                        fit: BoxFit.cover,
-                                      ),
-                                    ),
-                                  ),
-                                  SizedBox(height: 1),
-                                  Padding(
-                                    padding:
-                                        const EdgeInsets.symmetric(horizontal: 8),
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          product.name,
-                                          style: TextStyle(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                        SizedBox(height: 5),
-                                        Text(
-                                          product.description,
-                                          maxLines: 2,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: TextStyle(fontSize: 12),
-                                        ),
-                                        SizedBox(height: 5),
-                                        Row(
-                                          mainAxisAlignment: MainAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              'Price: Kshs ${product.price}',
-                                              style: TextStyle(
-                                                fontSize: 12,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            ),
-                                            Spacer(),
-                                            TextButton(
-                                              onPressed: () {
-                                                // Buy button action
-                                              },
-                                              child: Text("Buy"),
-                                            ),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
                         );
-                      },
-                    );
-                  }
-                },
+                      }
+                    },
+                  ),
+                ),
               ),
-            ),
+            ],
           ),
-        ],
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {

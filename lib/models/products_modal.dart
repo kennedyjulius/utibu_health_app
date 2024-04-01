@@ -1,72 +1,64 @@
 import 'dart:convert';
-ProductModel productModelFromJson(String str)=>ProductModel.fromJson(json.decode(str));
-String productModelToJson(ProductModel data)=>json.encode(data.toJson());
+
+ProductModel productModelFromJson(String str) => ProductModel.fromJson(json.decode(str));
+String productModelToJson(ProductModel data) => json.encode(data.toJson());
 
 class ProductModel {
   ProductModel({
     required this.image,
-    required this.productId,
-    //required this.isFavourite,
+    required this.id,
     required this.name,
     required this.price,
     required this.description,
-    //required this.status,
     this.quantity,
-
+    this.location,
   });
 
   String image;
-  String productId;
-  //bool isFavourite;
+  String id;
   String name;
-
-
-  String price;
+  double price;
   String description;
-  //String status;
-  int ? quantity;
+  int? quantity;
+  String? location;
 
   factory ProductModel.fromJson(Map<String, dynamic> json) => ProductModel(
     image: json["image"],
-    productId: json["productId"],
-    //isFavourite: false,
-    quantity: json["quantity"],
+    id: json["productId"].toString(),
     name: json["name"],
-    price: json["price"],
+    price: double.parse(json["price"]),
     description: json["description"],
-    //status: json["status"],
-
-
+    quantity: json["quantity"],
+    location: json["location"],
   );
 
   Map<String, dynamic> toJson() => {
     "image": image,
-    "productid": productId,
-    //"isFavourite":isFavourite,
-    "quantity": quantity,
+    "productId": id,
     "name": name,
-    "price": price,
-    "description":description,
+    "price": price.toString(),
+    "description": description,
+    "quantity": quantity,
+    "location": location,
   };
+
   ProductModel copyWith({
     String? image,
-    String? productId,
-    //bool? isFavourite,
+    String? id,
     String? name,
-    String? price,
+    double? price,
     String? description,
-    //String? status,
-    int ? quantity,
+    int? quantity,
+    String? location,
   }) {
     return ProductModel(
       image: image ?? this.image,
-      productId: productId ?? this.productId,
-      //isFavourite: isFavourite ?? this.isFavourite,
+      id: id ?? this.id,
       name: name ?? this.name,
       price: price ?? this.price,
       description: description ?? this.description,
-      //status: status ?? this.status,
       quantity: quantity ?? this.quantity,
+      location: location ?? this.location,
     );
   }
 }
