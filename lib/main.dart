@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:utibu_health_app/firebase_options.dart';
 import 'package:utibu_health_app/screens/cart/cart_page.dart';
+import 'package:utibu_health_app/screens/other_screens/address_screen.dart';
 import 'package:utibu_health_app/screens/other_screens/homescreen.dart';
 import 'package:utibu_health_app/screens/other_screens/product_detail_screen.dart';
 
@@ -29,7 +30,7 @@ class MyApp extends StatelessWidget {
         //colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: HomeScreen(),
+      home: AddressScreen(),
       
     );
   }
